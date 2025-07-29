@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: msvc-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: microservice-aws
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/aws/**
+
+        - id: msvc-auth
+          uri: http://localhost:8081
+          predicates:
+              - Path=/api/auth/**
+
+
+
+security:
+  service:
+    url: http://localhost:8081/api/auth
+
+eureka:
+  client:
+    register-with-eureka: false
+

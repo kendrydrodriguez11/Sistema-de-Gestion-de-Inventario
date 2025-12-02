@@ -1,6 +1,7 @@
 package com.example.microservice_aws.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
@@ -18,25 +19,15 @@ public class S3ServiceImpl implements S3Service {
     private final S3Presigner s3Presigner;
     private static final Logger logger = LoggerFactory.getLogger(S3ServiceImpl.class);
 
-
+    @Value("${spring.aws.region}")
+    private String region;
 
 
     @Override
     public String createBucket(String bucketName) {
-        try {
-            if (!checkIfBucketExist(bucketName)) {
-                CreateBucketResponse response = s3Client.createBucket(bucketBuilder -> bucketBuilder.bucket(bucketName));
-                logger.info("Bucket '{}' created successfully", bucketName);
-                return "Bucket created successfully";
-            }
-            logger.warn("Bucket name '{}' already exists", bucketName);
-            return "Bucket name already exists";
-        } catch (Exception e) {
-            logger.error("Error creating bucket '{}': {}", bucketName, e.getMessage(), e);
-            return "Error creating bucket";
-        }
+        CreateBucketResponse response = this.s3Client.createBucket(bucketBuilder -> bucketBuilder.bucket(bucketName));
+        return "Bucket creado en la ubicación: " + response.location();
     }
-
 
 
     @Override
@@ -67,6 +58,12 @@ public class S3ServiceImpl implements S3Service {
 
     @Override
     public String generatePresignedUrl(String bucketName, String key) {
+        if (key == null || key.isBlank()) {
+            throw new IllegalArgumentException("El key no puede ser null o vacío");
+        }
+
+        System.out.println("la key" + key);
+
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)

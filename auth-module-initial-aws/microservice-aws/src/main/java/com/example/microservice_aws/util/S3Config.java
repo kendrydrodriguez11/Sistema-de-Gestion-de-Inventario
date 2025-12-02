@@ -1,6 +1,5 @@
 package com.example.microservice_aws.util;
 
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,8 +24,9 @@ public class S3Config {
     private String region;
 
     @Bean
-    public S3Client generateS3Client(){
-        AwsBasicCredentials awsBasicCredentials =  AwsBasicCredentials.create(awsAccessKey, awsSecretKey);
+    public S3Client generateS3Client() {
+        AwsBasicCredentials awsBasicCredentials =
+                AwsBasicCredentials.create(awsAccessKey, awsSecretKey);
 
         return S3Client.builder()
                 .region(Region.of(region))
@@ -35,18 +35,14 @@ public class S3Config {
                 .build();
     }
 
-
-
     @Bean
-    public S3Presigner s3Presigner(){
-        AwsBasicCredentials awsBasicCredentials = AwsBasicCredentials.create(awsAccessKey, awsSecretKey);
+    public S3Presigner s3Presigner() {
+        AwsBasicCredentials awsBasicCredentials =
+                AwsBasicCredentials.create(awsAccessKey, awsSecretKey);
 
         return S3Presigner.builder()
-        .region(Region.of(region))
+                .region(Region.of(region))
                 .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials))
                 .build();
-
-
-
     }
 }

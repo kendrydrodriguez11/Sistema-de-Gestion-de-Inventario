@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 
 import java.time.Duration;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,42 +35,57 @@ public class AuthServiceImpl implements AuthService {
     private final S3ClientApi s3ClientApi;
     private final UserActivityRepository userActivityRepository;
     private final CacheService cacheService;
+
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     @Override
     public Map<String, Object> registerUser(String username, String email, String password, String bucketName) {
-        String key = null;
-        String uploadUrl = null;
 
-        // Check cache first
         String cacheKey = "user:check:" + username;
+
         if (cacheService.exists(cacheKey)) {
             throw new RuntimeException("Username already exists");
         }
 
-        Set<EntityRoles> rol = Collections.singleton(EntityRoles.builder().name(RolesE.USER).build());
+        // Roles
+        Set<EntityRoles> rol = new HashSet<>();
+        rol.add(EntityRoles.builder().name(RolesE.USER).build());
 
+        // Crear usuario base
         EntityUser user = EntityUser.builder()
                 .username(username)
                 .email(email)
                 .password(passwordEncoder.encode(password))
                 .roles(rol)
                 .build();
+
         try {
+            EntityUser savedUser = authRepository.save(user);
+
+            String key = null;
+            String uploadUrl = null;
+
+            // Generar key con extensión incluida (corrección principal)
             if (bucketName != null && !bucketName.isEmpty()) {
-                key = "profiles/" + user.getId();
+                key = "profiles/" + savedUser.getId() + ".png";   // ✔ Correcto
                 uploadUrl = s3ClientApi.getPresignedUrl(bucketName, key);
             }
 
-            String finalFileUrl = key != null ? "https://" + bucketName + ".s3.amazonaws.com/" + key : null;
-            user.setUrlPhotoAws(finalFileUrl);
-            EntityUser savedUser = authRepository.save(user);
+            System.out.println("Generated S3 key: " + key);
 
-            // Cache user data
+            // Construcción correcta de URL final
+            String finalFileUrl = (key != null)
+                    ? "https://" + bucketName + ".s3.amazonaws.com/" + key  // ✔ URL coherente
+                    : null;
+
+            savedUser.setUrlPhotoAws(finalFileUrl);
+            authRepository.save(savedUser);
+
+            // Cache
             cacheService.save("user:" + username, savedUser, Duration.ofHours(1));
             cacheService.save(cacheKey, true, Duration.ofHours(24));
 
-            // Log activity
+            // Log de actividad
             UserActivity activity = UserActivity.builder()
                     .userId(savedUser.getId())
                     .username(username)
@@ -80,8 +95,8 @@ public class AuthServiceImpl implements AuthService {
 
             return Map.of(
                     "message", "User registered successfully",
-                    "uploadUrl", uploadUrl != null ? uploadUrl : "",
-                    "fileUrl", finalFileUrl != null ? finalFileUrl : ""
+                    "uploadUrl", (uploadUrl != null ? uploadUrl : ""),
+                    "fileUrl", (finalFileUrl != null ? finalFileUrl : "")
             );
 
         } catch (Exception e) {
@@ -89,6 +104,7 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Error registering user", e);
         }
     }
+
 
     @Override
     public String authenticateUser(LoginUser user) {
@@ -102,7 +118,7 @@ public class AuthServiceImpl implements AuthService {
         // Cache token validation
         cacheService.save("token:" + token, userLogin.getId(), Duration.ofHours(1));
 
-        // Log activity
+        // Log
         UserActivity activity = UserActivity.builder()
                 .userId(userLogin.getId())
                 .username(user.getUsername())

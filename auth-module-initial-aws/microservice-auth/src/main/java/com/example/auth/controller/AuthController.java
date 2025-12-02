@@ -23,29 +23,37 @@ public class AuthController {
             @RequestParam("username") String username,
             @RequestParam("email") String email,
             @RequestParam("password") String password,
-            @RequestParam("bucket") String bucketName) {
+            @RequestParam(value = "bucket", required = false, defaultValue = "my-inventory-bucket") String bucketName) {
         try {
+            logger.info("Registering user: {} with email: {}", username, email);
             Map<String, Object> urlCreated = authService.registerUser(username, email, password, bucketName);
+            logger.info("User registered successfully: {}", username);
             return ResponseEntity.ok(urlCreated);
 
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             logger.error("Error in register: {} | Localized: {}", e.getMessage(), e.getLocalizedMessage());
-            return ResponseEntity.badRequest().body(Map.of(
-                    "status", "bad request",
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "status", "error",
                     "error", e.getMessage()
+            ));
+        } catch (Exception e) {
+            logger.error("Unexpected error in register", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "status", "error",
+                    "error", "Error interno del servidor"
             ));
         }
     }
 
-
-
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> authenticate(@RequestBody LoginUser user) {
         try {
+            logger.info("Login attempt for user: {}", user.getUsername());
             String token = authService.authenticateUser(user);
             Map<String, String> response = new HashMap<>();
             response.put("token", token);
 
+            logger.info("Login successful for user: {}", user.getUsername());
             return ResponseEntity.ok()
                     .header("Authorization", "Bearer " + token)
                     .body(response);
@@ -56,6 +64,4 @@ public class AuthController {
                     .body(Map.of("error", "Credenciales inválidas"));
         }
     }
-
-
 }

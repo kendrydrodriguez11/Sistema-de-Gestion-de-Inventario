@@ -10,11 +10,18 @@ import {
   Menu,
   MenuItem,
   Box,
+  Avatar,
+  Divider,
+  ListItemIcon,
+  ListItemText,
+  alpha,
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
-  AccountCircle,
   Menu as MenuIcon,
+  Logout,
+  Person,
+  Inventory2,
 } from '@mui/icons-material';
 import notificationService from '../../services/notificationService';
 import websocketService from '../../services/websocketService';
@@ -33,20 +40,15 @@ const Navbar = ({ onMenuClick }) => {
     
     websocketService.connect(
       () => {
-        console.log('WebSocket connected in Navbar');
         websocketService.subscribeToNotifications((notification) => {
           setUnreadCount((prev) => prev + 1);
           setNotifications((prev) => [notification, ...prev]);
         });
       },
-      (error) => {
-        console.error('WebSocket error:', error);
-      }
+      (error) => console.error('WebSocket error:', error)
     );
 
-    return () => {
-      websocketService.disconnect();
-    };
+    return () => websocketService.disconnect();
   }, []);
 
   const loadUnreadCount = async () => {
@@ -58,10 +60,8 @@ const Navbar = ({ onMenuClick }) => {
     }
   };
 
-  const handleMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
+  const handleMenu = (event) => setAnchorEl(event.currentTarget);
+  
   const handleNotifMenu = async (event) => {
     setNotifAnchorEl(event.currentTarget);
     try {
@@ -72,13 +72,8 @@ const Navbar = ({ onMenuClick }) => {
     }
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleNotifClose = () => {
-    setNotifAnchorEl(null);
-  };
+  const handleClose = () => setAnchorEl(null);
+  const handleNotifClose = () => setNotifAnchorEl(null);
 
   const handleLogout = () => {
     handleClose();
@@ -102,24 +97,60 @@ const Navbar = ({ onMenuClick }) => {
   };
 
   return (
-    <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-      <Toolbar>
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          edge="start"
-          onClick={onMenuClick}
-          sx={{ mr: 2 }}
-        >
-          <MenuIcon />
-        </IconButton>
-        
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          Sistema de Inventario
-        </Typography>
+    <AppBar 
+      position="fixed" 
+      elevation={0}
+      sx={{ 
+        zIndex: (theme) => theme.zIndex.drawer + 1,
+        backdropFilter: 'blur(20px)',
+        backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.8),
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+      }}
+    >
+      <Toolbar sx={{ justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <IconButton
+            color="primary"
+            edge="start"
+            onClick={onMenuClick}
+            sx={{ 
+              backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
+              '&:hover': {
+                backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.2),
+              }
+            }}
+          >
+            <MenuIcon />
+          </IconButton>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Inventory2 sx={{ fontSize: 32, color: 'primary.main' }} />
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontWeight: 700,
+                background: 'linear-gradient(45deg, #6366f1 30%, #ec4899 90%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Inventario Pro
+            </Typography>
+          </Box>
+        </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <IconButton color="inherit" onClick={handleNotifMenu}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <IconButton 
+            color="primary"
+            onClick={handleNotifMenu}
+            sx={{
+              backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
+              '&:hover': {
+                backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.2),
+              }
+            }}
+          >
             <Badge badgeContent={unreadCount} color="error">
               <NotificationsIcon />
             </Badge>
@@ -130,24 +161,43 @@ const Navbar = ({ onMenuClick }) => {
             open={Boolean(notifAnchorEl)}
             onClose={handleNotifClose}
             PaperProps={{
-              style: {
+              sx: {
                 maxHeight: 400,
-                width: '350px',
+                width: '380px',
+                mt: 1,
+                borderRadius: 3,
+                boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
               },
             }}
           >
+            <Box sx={{ p: 2, pb: 1 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                Notificaciones
+              </Typography>
+            </Box>
+            <Divider />
             {notifications.length === 0 ? (
-              <MenuItem>No hay notificaciones</MenuItem>
+              <MenuItem>
+                <Typography color="text.secondary">No hay notificaciones</Typography>
+              </MenuItem>
             ) : (
               notifications.map((notif) => (
                 <MenuItem
                   key={notif.id}
                   onClick={() => handleNotificationClick(notif)}
-                  sx={{ whiteSpace: 'normal', wordWrap: 'break-word' }}
+                  sx={{ 
+                    py: 2,
+                    whiteSpace: 'normal',
+                    '&:hover': {
+                      backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.05),
+                    }
+                  }}
                 >
                   <Box>
-                    <Typography variant="subtitle2">{notif.title}</Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                      {notif.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                       {notif.message}
                     </Typography>
                   </Box>
@@ -156,20 +206,62 @@ const Navbar = ({ onMenuClick }) => {
             )}
           </Menu>
 
-          <IconButton color="inherit" onClick={handleMenu}>
-            <AccountCircle />
+          <IconButton 
+            onClick={handleMenu}
+            sx={{
+              backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
+              '&:hover': {
+                backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.2),
+              }
+            }}
+          >
+            <Avatar 
+              sx={{ 
+                width: 32, 
+                height: 32,
+                bgcolor: 'primary.main',
+                fontSize: '0.875rem',
+                fontWeight: 700,
+              }}
+            >
+              {user?.sub?.charAt(0).toUpperCase()}
+            </Avatar>
           </IconButton>
           
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleClose}
+            PaperProps={{
+              sx: {
+                mt: 1,
+                minWidth: 200,
+                borderRadius: 3,
+                boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+              },
+            }}
           >
-            <MenuItem disabled>
-              <Typography variant="body2">{user?.sub}</Typography>
+            <Box sx={{ px: 2, py: 1.5 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                {user?.sub}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Usuario activo
+              </Typography>
+            </Box>
+            <Divider />
+            <MenuItem onClick={handleProfile} sx={{ py: 1.5 }}>
+              <ListItemIcon>
+                <Person fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Mi Perfil</ListItemText>
             </MenuItem>
-            <MenuItem onClick={handleProfile}>Perfil</MenuItem>
-            <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
+            <MenuItem onClick={handleLogout} sx={{ py: 1.5, color: 'error.main' }}>
+              <ListItemIcon>
+                <Logout fontSize="small" color="error" />
+              </ListItemIcon>
+              <ListItemText>Cerrar Sesión</ListItemText>
+            </MenuItem>
           </Menu>
         </Box>
       </Toolbar>

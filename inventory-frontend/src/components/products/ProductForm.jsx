@@ -78,7 +78,9 @@ const ProductForm = () => {
 
   const handleImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
+      const file = e.target.files[0];
+      console.log('📁 Archivo seleccionado:', file.name, file.type);
+      setImageFile(file);
     }
   };
 
@@ -94,17 +96,21 @@ const ProductForm = () => {
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
         minStock: formData.minStock ? parseInt(formData.minStock) : 10,
+        image: imageFile // 🔥 Agregado: enviar el File object
       };
 
       if (isEdit) {
         await productService.updateProduct(id, productData);
         setSuccess('Producto actualizado exitosamente');
       } else {
-        const response = await productService.createProduct(productData, 'my-inventory-bucket');
+        console.log('📤 Enviando producto con imagen:', {
+          ...productData,
+          hasImage: !!imageFile,
+          imageType: imageFile?.type
+        });
         
-        if (imageFile && response.uploadUrl) {
-          await productService.uploadImage(response.uploadUrl, imageFile);
-        }
+        // 🔥 Cambiado: createProduct ahora maneja todo internamente
+        await productService.createProduct(productData, 'my-inventory-bucketken');
         
         setSuccess('Producto creado exitosamente');
       }
@@ -114,7 +120,7 @@ const ProductForm = () => {
       }, 2000);
     } catch (error) {
       setError(error.response?.data?.message || 'Error al guardar el producto');
-      console.error('Error saving product:', error);
+      console.error('❌ Error saving product:', error);
     } finally {
       setLoading(false);
     }
@@ -247,6 +253,11 @@ const ProductForm = () => {
                     onChange={handleImageChange}
                   />
                 </Button>
+                {imageFile && (
+                  <Typography variant="caption" color="success.main" sx={{ mt: 1, display: 'block' }}>
+                    ✓ Imagen seleccionada: {imageFile.name}
+                  </Typography>
+                )}
               </Grid>
             )}
           </Grid>

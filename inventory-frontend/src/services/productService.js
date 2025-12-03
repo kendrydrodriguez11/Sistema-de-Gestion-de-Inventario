@@ -19,10 +19,12 @@ const productService = {
     const decoded = jwtDecode(token);
     const userId = decoded.idUser;
 
+    // 🔥 Separar archivo de imagen de los datos del producto
     const imageFile = productData.image;
     const productInfo = { ...productData };
     delete productInfo.image;
 
+    // 1️⃣ Crear producto y obtener uploadUrl
     const response = await api.post('/api/inventory/products', productInfo, {
       params: { bucketName },
       headers: {
@@ -32,18 +34,25 @@ const productService = {
 
     const { uploadUrl, ...createdProduct } = response.data;
 
+    // 2️⃣ Si hay imagen y uploadUrl, subir a S3
     if (uploadUrl && imageFile) {
-      const uploadResponse = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': imageFile.type,
-        },
-        body: imageFile,
-      });
-      
-      console.log('Upload status:', uploadResponse.status);
-      if (!uploadResponse.ok) {
-        console.error('Upload failed:', await uploadResponse.text());
+      try {
+        const uploadResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': imageFile.type,
+          },
+          body: imageFile,
+        });
+        
+        if (!uploadResponse.ok) {
+          console.error('❌ Error subiendo imagen:', await uploadResponse.text());
+          throw new Error('Failed to upload image');
+        }
+        console.log('✅ Imagen subida correctamente');
+      } catch (error) {
+        console.error('❌ Error en upload:', error);
+        throw error;
       }
     }
 

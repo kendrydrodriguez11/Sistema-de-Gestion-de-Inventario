@@ -23,10 +23,11 @@ public class SecurityConfig {
                                 "/api/auth/login",
                                 "/api/auth/validationToken",
                                 "/ws/**",
+                                "/api/auth/users",
                                 "/actuator/**",
                                 "/error"
                         ).permitAll()
-                        .requestMatchers("/api/auth/users/**", "/api/auth/user/**", "/api/auth/activity/**")
+                        .requestMatchers("/api/auth/user/**", "/api/auth/activity/**")
                         .hasAnyRole("ADMIN", "USER")
                         .anyRequest().authenticated()
                 )

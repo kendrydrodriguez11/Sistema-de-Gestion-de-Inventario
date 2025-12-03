@@ -50,7 +50,9 @@ public class ProductEntity {
     @NotBlank
     private String category;
 
+    @Column(columnDefinition = "TEXT")
     private String imageUrl;
+
 
     @NotNull
     @Column(name = "created_by")

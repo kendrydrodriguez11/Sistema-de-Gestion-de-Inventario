@@ -7,9 +7,9 @@ spring:
 
   aws:
     secret:
-      key: ${AWS_SECRET_KEY}
+      key: SECRET_KEY_HIDDEN
     access:
-      key: ${AWS_ACCESS_KEY}
+      key: ACCESS_KEY_HIDDEN
     region: us-east-1
 
 eureka:

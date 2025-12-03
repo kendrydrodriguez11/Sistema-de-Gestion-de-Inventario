@@ -38,12 +38,20 @@ public class AwsController {
     }
 
 
-    @GetMapping("/presigned-url")
-    public ResponseEntity<String> generatePresignedUrl(
+    @GetMapping("/presigned-url/put")
+    public ResponseEntity<String> generatePutUrl(
             @RequestParam String bucketName,
             @RequestParam String key) {
-        return ResponseEntity.ok(s3Service.generatePresignedUrl(bucketName, key));
+        return ResponseEntity.ok(s3Service.generatePresignedPutUrl(bucketName, key));
     }
+
+    @GetMapping("/presigned-url/get")
+    public ResponseEntity<String> generateGetUrl(
+            @RequestParam String bucketName,
+            @RequestParam String key) {
+        return ResponseEntity.ok(s3Service.generatePresignedGetUrl(bucketName, key));
+    }
+
 
 
 }

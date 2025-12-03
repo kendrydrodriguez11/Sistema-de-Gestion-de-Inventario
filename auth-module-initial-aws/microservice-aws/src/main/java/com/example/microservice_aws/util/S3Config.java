@@ -10,7 +10,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 import java.net.URI;
-
 @Configuration
 public class S3Config {
 
@@ -24,25 +23,21 @@ public class S3Config {
     private String region;
 
     @Bean
-    public S3Client generateS3Client() {
-        AwsBasicCredentials awsBasicCredentials =
-                AwsBasicCredentials.create(awsAccessKey, awsSecretKey);
-
+    public S3Client s3Client() {
+        AwsBasicCredentials creds = AwsBasicCredentials.create(awsAccessKey, awsSecretKey);
         return S3Client.builder()
                 .region(Region.of(region))
                 .endpointOverride(URI.create("https://s3.us-east-1.amazonaws.com"))
-                .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials))
+                .credentialsProvider(StaticCredentialsProvider.create(creds))
                 .build();
     }
 
     @Bean
     public S3Presigner s3Presigner() {
-        AwsBasicCredentials awsBasicCredentials =
-                AwsBasicCredentials.create(awsAccessKey, awsSecretKey);
-
+        AwsBasicCredentials creds = AwsBasicCredentials.create(awsAccessKey, awsSecretKey);
         return S3Presigner.builder()
                 .region(Region.of(region))
-                .credentialsProvider(StaticCredentialsProvider.create(awsBasicCredentials))
+                .credentialsProvider(StaticCredentialsProvider.create(creds))
                 .build();
     }
 }

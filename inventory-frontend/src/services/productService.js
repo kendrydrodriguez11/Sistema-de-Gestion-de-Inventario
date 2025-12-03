@@ -14,18 +14,40 @@ const productService = {
     return response.data;
   },
 
-  async createProduct(productData, bucketName = 'my-inventory-bucket') {
+  async createProduct(productData, bucketName = 'my-inventory-bucketken') {
     const token = localStorage.getItem('token');
     const decoded = jwtDecode(token);
     const userId = decoded.idUser;
 
-    const response = await api.post('/api/inventory/products', productData, {
+    const imageFile = productData.image;
+    const productInfo = { ...productData };
+    delete productInfo.image;
+
+    const response = await api.post('/api/inventory/products', productInfo, {
       params: { bucketName },
       headers: {
         'X-User-Id': userId,
       },
     });
-    return response.data;
+
+    const { uploadUrl, ...createdProduct } = response.data;
+
+    if (uploadUrl && imageFile) {
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': imageFile.type,
+        },
+        body: imageFile,
+      });
+      
+      console.log('Upload status:', uploadResponse.status);
+      if (!uploadResponse.ok) {
+        console.error('Upload failed:', await uploadResponse.text());
+      }
+    }
+
+    return createdProduct;
   },
 
   async updateProduct(id, productData) {
@@ -65,17 +87,6 @@ const productService = {
       params: { page, size },
     });
     return response.data;
-  },
-
-  async uploadImage(uploadUrl, file) {
-    const response = await fetch(uploadUrl, {
-      method: 'PUT',
-      body: file,
-      headers: {
-        'Content-Type': file.type,
-      },
-    });
-    return response.ok;
   },
 };
 

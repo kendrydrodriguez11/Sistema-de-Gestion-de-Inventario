@@ -9,5 +9,6 @@ public interface S3Service {
     String createBucket(String bucketName);
     Boolean checkIfBucketExist(String bucketName);
     List<String> getAllBuckets();
-    String generatePresignedUrl(String bucketName, String key);
+    String generatePresignedPutUrl(String bucketName, String key);
+    String generatePresignedGetUrl(String bucketName, String key);
 }

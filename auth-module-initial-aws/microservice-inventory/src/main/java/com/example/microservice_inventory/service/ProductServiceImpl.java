@@ -34,13 +34,12 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponseDto createProduct(ProductCreateDto dto, UUID userId, String bucketName) {
-        String imageUrl = null;
         String uploadUrl = null;
+        String imageKey = null;
 
         if (bucketName != null && !bucketName.isEmpty()) {
-            String key = "products/" + UUID.randomUUID();
-            uploadUrl = s3ClientApi.getPresignedUrl(bucketName, key);
-            imageUrl = "https://" + bucketName + ".s3.amazonaws.com/" + key;
+            imageKey = "products/" + UUID.randomUUID();
+            uploadUrl = s3ClientApi.getPresignedPutUrl(bucketName, imageKey);
         }
 
         ProductEntity product = ProductEntity.builder()
@@ -51,20 +50,17 @@ public class ProductServiceImpl implements ProductService {
                 .stock(dto.getStock())
                 .minStock(dto.getMinStock())
                 .category(dto.getCategory())
-                .imageUrl(imageUrl)
+                .imageUrl(imageKey)
                 .createdBy(userId)
                 .status(ProductStatus.ACTIVE)
                 .build();
 
         ProductEntity saved = productRepository.save(product);
-
         cacheService.save("product:" + saved.getId(), saved, Duration.ofHours(1));
-
         checkAndSendLowStockAlert(saved);
 
         ProductResponseDto response = mapToDto(saved);
         response.setUploadUrl(uploadUrl);
-
         return response;
     }
 
@@ -162,6 +158,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private ProductResponseDto mapToDto(ProductEntity entity) {
+        String imageUrl = null;
+        if (entity.getImageUrl() != null) {
+            imageUrl = s3ClientApi.getPresignedGetUrl("my-inventory-bucketken", entity.getImageUrl());
+        }
+
         return ProductResponseDto.builder()
                 .id(entity.getId())
                 .sku(entity.getSku())
@@ -171,7 +172,7 @@ public class ProductServiceImpl implements ProductService {
                 .stock(entity.getStock())
                 .minStock(entity.getMinStock())
                 .category(entity.getCategory())
-                .imageUrl(entity.getImageUrl())
+                .imageUrl(imageUrl)
                 .status(entity.getStatus())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())

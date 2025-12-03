@@ -1,25 +1,25 @@
-📦 Sistema de Gestión de Inventario con AWS S3
-Arquitectura Empresarial Basada en Microservicios
-📋 Descripción del Proyecto
+*📦 Sistema de Gestión de Inventario con AWS S3*
+*Arquitectura Empresarial Basada en Microservicios*
+*📋 Descripción del Proyecto*
 
 Este sistema es una plataforma empresarial completa para la gestión de inventario, diseñada con una arquitectura de microservicios altamente escalable.
 Permite a empresas administrar de manera eficiente:
 
-Productos y categorías
+* Productos y categorías
 
-Movimientos de stock en tiempo real
+* Movimientos de stock en tiempo real
 
-Alertas automáticas por bajo inventario
+* Alertas automáticas por bajo inventario
 
-Autenticación segura por JWT
+* Autenticación segura por JWT
 
-Notificaciones instantáneas
+* Notificaciones instantáneas
 
-Almacenamiento de imágenes en AWS S3 mediante URLs pre-firmadas
+* Almacenamiento de imágenes en AWS S3 mediante URLs pre-firmadas
 
 El objetivo es proveer una solución robusta, modular y lista para escalar en entornos de producción.
 
-⭐ Características Principales
+*⭐ Características Principales*
 Gestión del Inventario
 
 CRUD completo de productos
@@ -64,8 +64,8 @@ E-commerce con catálogo visual
 
 Empresas que requieren alertas de reabastecimiento
 
-🛠️ Tecnologías Utilizadas
-Backend
+*🛠️ Tecnologías Utilizadas*
+*Backend*
 
 Spring Boot 3
 
@@ -87,9 +87,9 @@ AWS S3 + AWS SDK v2
 
 WebSocket + STOMP
 
-Frontend
+*Frontend*
 
-React 18
+*React 18*
 
 Material UI v5
 
@@ -113,7 +113,7 @@ Lombok
 
 Git
 
-🧱 Arquitectura del Sistema
+*🧱 Arquitectura del Sistema*
 
 El sistema está compuesto por los siguientes microservicios:
 
@@ -157,14 +157,14 @@ Procesamiento de eventos
 Almacenamiento de notificaciones
 WebSocket de alertas en tiempo real
 
-🔄 Flujo de Datos
+*🔄 Flujo de Datos*
 Frontend → Gateway → Microservicio → MySQL
                                    ↓
                                RabbitMQ → Notifications
                                    ↓
                                WebSocket → Frontend
 
-🚀 Instalación y Configuración
+*🚀 Instalación y Configuración*
 Prerrequisitos
 
 Java 17+
@@ -181,18 +181,18 @@ Cuenta AWS + IAM
 
 Maven o Maven Wrapper
 
-📥 1. Clonar Repositorio
+*📥 1. Clonar Repositorio*
 git clone <repository-url>
 cd auth-module-initial-aws
 
-🗄️ 2. Configurar MySQL
+*🗄️ 2. Configurar MySQL*
 
 Crear BD:
 
 CREATE DATABASE inventory CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 
-Actualizar credenciales en:
+*Actualizar credenciales en:*
 
 msvc-auth.yml
 
@@ -200,11 +200,11 @@ msvc-inventory.yml
 
 msvc-notifications.yml
 
-⚡ 3. Configurar Redis
+*⚡ 3. Configurar Redis*
 redis-server --port 6379   # inventory
 redis-server --port 6380   # auth
 
-📨 4. Configurar RabbitMQ
+*📨 4. Configurar RabbitMQ*
 rabbitmq-server
 rabbitmq-plugins enable rabbitmq_management
 
@@ -212,14 +212,14 @@ rabbitmq-plugins enable rabbitmq_management
 Acceso: http://localhost:15672
 Usuario: guest, Password: guest
 
-☁️ 5. Configurar AWS S3
-5.1 Credenciales AWS
+*☁️ 5. Configurar AWS S3*
+*5.1 Credenciales AWS*
 
 AWS Console → IAM → User → Security Credentials → Create Access Key
 
 ⚠️ NO subir credenciales al repositorio
 
-5.2 Crear Bucket
+*5.2 Crear Bucket*
 
 Nombre: my-inventory-bucketken
 
@@ -236,7 +236,7 @@ Región: us-east-1
   }
 ]
 
-🌎 6. Configuración de Zona Horaria (CRÍTICA)
+*🌎 6. Configuración de Zona Horaria (CRÍTICA)*
 
 El microservicio AWS requiere sincronización exacta para generar URLs pre-firmadas.
 Si la hora del backend ≠ hora real → AWS rechaza la firma.
@@ -261,7 +261,7 @@ DEV: Usar tu zona local (ej. "America/Guayaquil")
 
 PROD: Usar UTC
 
-🔐 7. Configurar JWT Secret
+*🔐 7. Configurar JWT Secret*
 
 Generar clave:
 
@@ -276,7 +276,7 @@ jwt:
   time:
     expiration: 3600000
 
-🟢 8. Iniciar Microservicios (ORDEN OBLIGATORIO)
+*🟢 8. Iniciar Microservicios (ORDEN OBLIGATORIO)*
 # 1. Eureka
 cd microservice-eureka
 ./mvnw spring-boot:run
@@ -326,7 +326,7 @@ Servicios no aparecen en Eureka	Config Server no cargó	Esperar 1 minuto
 Error de BD	Credenciales incorrectas	Verificar YAML
 
 
-Algunas imagenes de mi sistema
+*Algunas imagenes de mi sistema*
 
 <img width="1919" height="921" alt="image" src="https://github.com/user-attachments/assets/e771daeb-596e-49e2-8f27-a1c90588c45a" />
 
